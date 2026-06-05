@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVARROS.BEER – Produtos</title>
+<script>!function(){var a=null;try{a=JSON.parse(localStorage.getItem('nb_auth'))}catch(e){}if(!a){location.replace('login.html');}else if(a.role==='garcom'){location.replace('garcom.html');}}();</script>
+<link rel="stylesheet" href="css/style.css">
+<style>
+/* ── LAYOUT ── */
+.prod-wrap { max-width:1280px; margin:0 auto; padding:24px 20px; }
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+.page-header h1 { font-size:20px; font-weight:700; }
+.btn { padding:8px 18px; border-radius:7px; font-size:13px; font-weight:600; border:none; cursor:pointer; font-family:inherit; transition:0.15s; }
+.btn-primary { background:#111; color:#fff; }
+.btn-primary:hover { background:#333; }
+.btn-danger { background:#fee2e2; color:#b91c1c; }
+.btn-danger:hover { background:#fca5a5; }
+.btn-ghost { background:#f3f4f6; color:#333; }
+.btn-ghost:hover { background:#e5e7eb; }
+.btn-sm { padding:5px 12px; font-size:12px; }
+
+/* ── TABS ── */
+.tabs { display:flex; gap:4px; border-bottom:1.5px solid #e5e7eb; margin-bottom:20px; overflow-x:auto; }
+.tab {
+  padding:9px 20px; font-size:13px; font-weight:600; color:#666;
+  border-bottom:2px solid transparent; cursor:pointer; white-space:nowrap;
+  background:none; border-left:none; border-right:none; border-top:none;
+  font-family:inherit; transition:0.15s;
+}
+.tab:hover { color:#111; }
+.tab.active { color:#111; border-bottom-color:#111; }
+
+/* ── TOOLBAR ── */
+.toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.search-input {
+  flex:1; min-width:180px; padding:8px 14px;
+  border:1.5px solid #ddd; border-radius:7px;
+  font-size:13px; font-family:inherit;
+}
+.search-input:focus { outline:none; border-color:#111; }
+.filter-select {
+  padding:8px 12px; border:1.5px solid #ddd; border-radius:7px;
+  font-size:13px; font-family:inherit; background:#fff; cursor:pointer;
+}
+
+/* ── TABLE ── */
+.table-wrap { overflow-x:auto; border-radius:10px; border:1px solid #e5e7eb; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:#f9fafb; padding:10px 14px; text-align:left; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#6b7280; border-bottom:1px solid #e5e7eb; white-space:nowrap; }
+td { padding:11px 14px; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover td { background:#f9fafb; }
+.td-img { width:44px; height:44px; border-radius:8px; background:#f3f4f6; display:flex; align-items:center; justify-content:center; font-size:1.6rem; overflow:hidden; flex-shrink:0; }
+.td-img img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+.td-nome { font-weight:700; color:#111; }
+.td-desc { font-size:12px; color:#888; margin-top:1px; }
+.td-cat { display:inline-block; padding:2px 9px; background:#f3f4f6; border-radius:20px; font-size:11px; font-weight:600; color:#555; white-space:nowrap; }
+.price-main { font-weight:700; }
+.price-delivery { font-size:11px; color:#666; margin-top:1px; }
+
+/* ── STOCK BADGE ── */
+.stock-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700;
+}
+.stock-ok      { background:#dcfce7; color:#15803d; }
+.stock-low     { background:#fef9c3; color:#92400e; }
+.stock-critical{ background:#fee2e2; color:#b91c1c; }
+
+/* ── TOGGLE ── */
+.toggle { position:relative; width:38px; height:20px; cursor:pointer; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0;
+  background:#ddd; border-radius:20px; transition:0.2s;
+}
+.toggle-slider::before {
+  content:''; position:absolute; width:14px; height:14px;
+  left:3px; top:3px; background:#fff; border-radius:50%; transition:0.2s;
+}
+.toggle input:checked + .toggle-slider { background:#111; }
+.toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
+
+/* ── MODAL ── */
+.modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:center; justify-content:center; padding:16px; }
+.modal.open { display:flex; }
+.modal-box {
+  background:#fff; border-radius:14px; width:100%; max-width:620px;
+  max-height:90vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.2);
+  animation:fadeInUp 0.2s ease;
+}
+@keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 0; }
+.modal-header h3 { font-size:16px; font-weight:700; }
+.modal-close { background:#f3f4f6; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.modal-close:hover { background:#e5e7eb; }
+.modal-body { padding:20px 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.modal-body .full { grid-column:1/-1; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label { font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.8px; }
+.form-group input, .form-group select, .form-group textarea {
+  padding:9px 12px; border:1.5px solid #ddd; border-radius:8px;
+  font-size:14px; font-family:inherit; transition:0.15s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#111; }
+.form-group textarea { resize:none; height:68px; }
+.img-preview {
+  width:100%; height:120px; border-radius:10px; background:#f3f4f6;
+  border:1.5px dashed #d1d5db; display:flex; align-items:center; justify-content:center;
+  font-size:3rem; overflow:hidden; margin-top:8px;
+}
+.img-preview img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
+.modal-footer { padding:0 24px 20px; display:flex; gap:10px; justify-content:flex-end; }
+.section-divider {
+  grid-column:1/-1; font-size:11px; font-weight:700; color:#9ca3af;
+  text-transform:uppercase; letter-spacing:1px;
+  padding-top:8px; border-top:1px solid #f3f4f6; margin-top:4px;
+}
+
+/* ── ESTOQUE MODAL ── */
+.stock-modal-box { max-width:440px; }
+.mov-list { display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto; margin-top:10px; }
+.mov-item { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:#f9fafb; border-radius:7px; font-size:12px; }
+.mov-tipo { font-weight:700; }
+.mov-tipo.entrada { color:#15803d; }
+.mov-tipo.saida   { color:#b91c1c; }
+.mov-tipo.ajuste  { color:#1d4ed8; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align:center; padding:60px 20px; color:#9ca3af; }
+.empty-state i { font-size:2.5rem; display:block; margin-bottom:12px; opacity:0.3; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:640px) {
+  .modal-body { grid-template-columns:1fr; }
+  .modal-body .full { grid-column:1; }
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">🍺 <strong>NAVARROS.BEER</strong></div>
+  <div class="nav-links">
+    <a href="index.html">Painel de Mesas</a>
+    <a href="pedidos.html">Pedidos</a>
+    <a href="configuracoes.html">Configurações</a>
+  </div>
+</nav>
+
+<div class="prod-wrap">
+  <div class="page-header">
+    <h1>📦 Gestão de Produtos</h1>
+    <button class="btn btn-primary" onclick="abrirModalNovo()">+ Novo Produto</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('produtos',this)">Produtos</button>
+    <button class="tab" onclick="setTab('estoque',this)">Estoque</button>
+    <button class="tab" onclick="setTab('categorias',this)">Categorias</button>
+  </div>
+
+  <!-- TAB PRODUTOS -->
+  <div id="tabProdutos">
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchProd" placeholder="Buscar produto…" oninput="renderProdutos()">
+      <select class="filter-select" id="filterCat" onchange="renderProdutos()">
+        <option value="">Todas as categorias</option>
+      </select>
+      <select class="filter-select" id="filterStatus" onchange="renderProdutos()">
+        <option value="">Todos os status</option>
+        <option value="ativo">Ativos</option>
+        <option value="inativo">Inativos</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Preço Mesa</th>
+            <th>Preço Delivery</th>
+            <th>Estoque</th>
+            <th>Ativo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="produtosBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB ESTOQUE -->
+  <div id="tabEstoque" style="display:none">
+    <div class="toolbar">
+      <input type="search" class="search-input" id="searchEst" placeholder="Buscar produto…" oninput="renderEstoque()">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Categoria</th>
+            <th>Estoque Atual</th>
+            <th>Mínimo</th>
+            <th>Status</th>
+            <th>Movimentar</th>
+          </tr>
+        </thead>
+        <tbody id="estoqueBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB CATEGORIAS -->
+  <div id="tabCategorias" style="display:none">
+    <div class="toolbar">
+      <input type="text" class="search-input" id="novaCat" placeholder="Nome da nova categoria…" style="max-width:280px">
+      <button class="btn btn-primary" onclick="adicionarCategoria()">+ Adicionar</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Categoria</th><th>Produtos</th><th>Ações</th></tr></thead>
+        <tbody id="categoriasBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div class="modal" id="modalProduto" onclick="if(event.target===this)fecharModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalProdTitle">Novo Produto</h3>
+      <button class="modal-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group full">
+        <label>Nome do Produto *</label>
+        <input type="text" id="fNome" placeholder="Ex: Brahma 600ml">
+      </div>
+      <div class="form-group">
+        <label>Categoria *</label>
+        <select id="fCat"></select>
+      </div>
+      <div class="form-group full">
+        <label>Descrição</label>
+        <textarea id="fDesc" placeholder="Descrição breve do produto…"></textarea>
+      </div>
+
+      <div class="section-divider">💰 Preços</div>
+      <div class="form-group">
+        <label>Preço Mesa (R$) *</label>
+        <input type="number" id="fPreco" placeholder="0,00" step="0.01" min="0">
+      </div>
+      <div class="form-group">
+        <label>Preço Delivery (R$)</label>
+        <input type="number" id="fPrecoDelivery" placeholder="0,00" step="0.01" min="0">
+      </div>
+
+      <div class="section-divider">📦 Estoque</div>
+      <div class="form-group">
+        <label>Quantidade em Estoque</label>
+        <input type="number" id="fEstoque" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Estoque Mínimo (alerta)</label>
+        <input type="number" id="fEstoqueMin" placeholder="5" min="0">
+      </div>
+
+      <div class="section-divider">🖼️ Imagem</div>
+      <div class="form-group full">
+        <label>Imagem do produto</label>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button type="button" id="tabUrl"    class="btn btn-ghost btn-sm" style="border-bottom:2px solid #111;font-weight:700" onclick="setImgTab('url')">🔗 URL</button>
+          <button type="button" id="tabUpload" class="btn btn-ghost btn-sm" onclick="setImgTab('upload')">📁 Computador/Celular</button>
+        </div>
+        <div id="imgUrlSection">
+          <input type="url" id="fImagem" placeholder="https://site.com/imagem.jpg" oninput="atualizarPreviewImg()" style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px">
+        </div>
+        <div id="imgUploadSection" style="display:none">
+          <input type="file" id="fImagemFile" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
+          <button type="button" class="btn btn-ghost" style="width:100%;padding:12px;border:2px dashed #ddd;border-radius:8px;font-size:14px" onclick="document.getElementById('fImagemFile').click()">
+            📷 Tirar foto ou escolher do celular/computador
+          </button>
+          <div id="uploadStatus" style="font-size:12px;color:#888;margin-top:6px;text-align:center"></div>
+        </div>
+        <div class="img-preview" id="imgPreview" style="margin-top:10px">📷</div>
+      </div>
+
+      <div class="form-group" style="align-items:center;flex-direction:row;gap:10px">
+        <label style="margin:0">Produto ativo</label>
+        <label class="toggle">
+          <input type="checkbox" id="fAtivo" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarProduto()">Salvar Produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ESTOQUE -->
+<div class="modal" id="modalEstoque" onclick="if(event.target===this)fecharModalEst()">
+  <div class="modal-box stock-modal-box">
+    <div class="modal-header">
+      <h3 id="estModalTitle">Movimentar Estoque</h3>
+      <button class="modal-close" onclick="fecharModalEst()">✕</button>
+    </div>
+    <div style="padding:16px 24px 24px">
+      <div style="font-size:13px;color:#666;margin-bottom:16px" id="estModalInfo"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="estTipo" class="form-group input" style="padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px">
+            <option value="entrada">Entrada (chegou mercadoria)</option>
+            <option value="saida">Saída (consumo/perda)</option>
+            <option value="ajuste">Ajuste manual</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input type="number" id="estQtd" min="1" value="1" style="padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;width:100%">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Motivo</label>
+        <input type="text" id="estMotivo" placeholder="Ex: Compra fornecedor, desperdício…" style="padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;width:100%">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;margin-bottom:20px" onclick="confirmarMovimento()">Registrar Movimento</button>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">Histórico recente</div>
+      <div class="mov-list" id="movList"></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+authRenderNav();
+
+let editingId   = null;
+let stockProdId = null;
+let currentTab  = 'produtos';
+
+/* ── INIT ── */
+DB.onReady(() => { popularFiltros(); renderProdutos(); });
+
+function fmt(v) { return 'R$ ' + Number(v||0).toFixed(2).replace('.',','); }
+
+function popularFiltros() {
+  const cats = DB.getTodasCategorias();
+  const sel = document.getElementById('filterCat');
+  sel.innerHTML = '<option value="">Todas as categorias</option>';
+  cats.forEach(c => sel.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`));
+
+  const fCat = document.getElementById('fCat');
+  fCat.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  fCat.insertAdjacentHTML('afterbegin', '<option value="_nova">+ Nova categoria…</option>');
+}
+
+/* ── TABS ── */
+function setTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tabProdutos').style.display   = tab === 'produtos'    ? '' : 'none';
+  document.getElementById('tabEstoque').style.display    = tab === 'estoque'     ? '' : 'none';
+  document.getElementById('tabCategorias').style.display = tab === 'categorias'  ? '' : 'none';
+  if (tab === 'estoque')    renderEstoque();
+  if (tab === 'categorias') renderCategorias();
+}
+
+/* ── RENDERIZAR PRODUTOS ── */
+function renderProdutos() {
+  const busca  = document.getElementById('searchProd').value.toLowerCase().trim();
+  const cat    = document.getElementById('filterCat').value;
+  const status = document.getElementById('filterStatus').value;
+
+  const prods = DB.getTodosProdutos().filter(p => {
+    const mB = !busca  || p.nome.toLowerCase().includes(busca) || (p.descricao||'').toLowerCase().includes(busca);
+    const mC = !cat    || p.categoria === cat;
+    const mS = !status || (status === 'ativo' ? p.ativo !== false : p.ativo === false);
+    return mB && mC && mS;
+  });
+
+  const tbody = document.getElementById('produtosBody');
+  if (!prods.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#9ca3af">Nenhum produto encontrado.</td></tr>`;
+    return;
+  }
+
+  const CAT_EMOJI = {'Cervejas':'🍺','Petiscos':'🍗','Drinks':'🍹','Não Alcoólicos':'🥤','Sobremesas':'🍮'};
+
+  tbody.innerHTML = prods.map(p => {
+    const ativo = p.ativo !== false;
+    const emoji = CAT_EMOJI[p.categoria] || '🍽️';
+    const stockClass = p.estoque === 0 ? 'stock-critical' : p.estoque <= (p.estoqueMin||5) ? 'stock-low' : 'stock-ok';
+    const stockLabel = p.estoque === 0 ? '🚨 Zerado' : p.estoque <= (p.estoqueMin||5) ? `⚠️ ${p.estoque}` : `✅ ${p.estoque}`;
+    const img = p.imagem ? `<img src="${p.imagem}" onerror="this.style.display='none'" alt="">` : emoji;
+
+    return `
+    <tr>
+      <td><div class="td-img">${img}</div></td>
+      <td>
+        <div class="td-nome">${p.nome}</div>
+        <div class="td-desc">${p.descricao||''}</div>
+      </td>
+      <td><span class="td-cat">${p.categoria}</span></td>
+      <td>
+        <div class="price-main">${fmt(p.preco)}</div>
+      </td>
+      <td>
+        <div class="price-delivery">${fmt(p.precoDelivery||p.preco)}</div>
+      </td>
+      <td><span class="stock-badge ${stockClass}">${stockLabel}</span></td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${ativo?'checked':''} onchange="toggleAtivo('${p.id}',this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalEditar('${p.id}')">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="confirmarExcluir('${p.id}','${p.nome.replace(/'/g,"\\'") }')">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── RENDERIZAR ESTOQUE ── */
+function renderEstoque() {
+  const busca = document.getElementById('searchEst').value.toLowerCase().trim();
+  const prods = DB.getTodosProdutos().filter(p => !busca || p.nome.toLowerCase().includes(busca));
+  prods.sort((a,b) => (a.estoque||0) - (b.estoque||0));
+
+  const tbody = document.getElementById('estoqueBody');
+  tbody.innerHTML = prods.map(p => {
+    const sc = p.estoque === 0 ? 'stock-critical' : p.estoque <= (p.estoqueMin||5) ? 'stock-low' : 'stock-ok';
+    const lbl = p.estoque === 0 ? '🚨 Zerado' : p.estoque <= (p.estoqueMin||5) ? `⚠️ Baixo` : `✅ OK`;
+    return `
+    <tr>
+      <td><b>${p.nome}</b></td>
+      <td><span class="td-cat">${p.categoria}</span></td>
+      <td style="font-size:18px;font-weight:800">${p.estoque??'—'}</td>
+      <td style="color:#9ca3af">${p.estoqueMin??5}</td>
+      <td><span class="stock-badge ${sc}">${lbl}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="abrirModalEstoque('${p.id}')">📦 Movimentar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── RENDERIZAR CATEGORIAS ── */
+function renderCategorias() {
+  const todos = DB.getTodosProdutos();
+  const cats  = [...new Set(todos.map(p => p.categoria))].sort();
+  const tbody = document.getElementById('categoriasBody');
+  tbody.innerHTML = cats.map(c => {
+    const cnt = todos.filter(p => p.categoria === c).length;
+    return `
+    <tr>
+      <td><b>${c}</b></td>
+      <td>${cnt} produto${cnt!==1?'s':''}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="renomearCategoria('${c}')">✏️ Renomear</button>
+        ${cnt === 0 ? `<button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="excluirCategoria('${c}')">🗑️ Excluir</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function adicionarCategoria() {
+  const nome = document.getElementById('novaCat').value.trim();
+  if (!nome) return;
+  const existe = DB.getTodasCategorias().includes(nome);
+  if (existe) { alert('Categoria já existe!'); return; }
+  DB.addProduto({ nome: '_placeholder_' + Date.now(), categoria: nome, ativo: false, preco: 0, precoDelivery: 0, estoque: 0, estoqueMin: 0 });
+  document.getElementById('novaCat').value = '';
+  renderCategorias(); popularFiltros();
+  toast('Categoria criada!', 'success');
+}
+
+function renomearCategoria(cat) {
+  const novo = prompt(`Novo nome para a categoria "${cat}":`, cat);
+  if (!novo || novo === cat) return;
+  const lista = DB.getTodosProdutos().map(p => p.categoria === cat ? {...p, categoria: novo} : p);
+  DB.setCardapio(lista);
+  renderCategorias(); popularFiltros();
+  toast('Categoria renomeada!', 'success');
+}
+
+function excluirCategoria(cat) {
+  if (!confirm(`Excluir categoria "${cat}"?`)) return;
+  const lista = DB.getTodosProdutos().filter(p => p.categoria !== cat);
+  DB.setCardapio(lista);
+  renderCategorias(); popularFiltros();
+  toast('Categoria excluída!', 'success');
+}
+
+/* ── IMAGEM: Tabs URL / Upload ── */
+let uploadedBase64 = '';
+
+function setImgTab(tab) {
+  const isUrl = tab === 'url';
+  document.getElementById('imgUrlSection').style.display    = isUrl ? '' : 'none';
+  document.getElementById('imgUploadSection').style.display = isUrl ? 'none' : '';
+  document.getElementById('tabUrl').style.borderBottom    = isUrl ? '2px solid #111' : 'none';
+  document.getElementById('tabUpload').style.borderBottom = isUrl ? 'none' : '2px solid #111';
+  if (isUrl) { uploadedBase64 = ''; document.getElementById('uploadStatus').textContent = ''; }
+}
+
+async function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('uploadStatus');
+  status.textContent = '⏳ Processando imagem…';
+  try {
+    const b64 = await comprimirImagem(file, 600, 0.78);
+    uploadedBase64 = b64;
+    const kb = Math.round(b64.length * 0.75 / 1024);
+    status.textContent = `✅ Imagem pronta (${kb} KB)`;
+    document.getElementById('imgPreview').innerHTML = `<img src="${b64}" alt="preview">`;
+  } catch(e) {
+    status.textContent = '❌ Erro ao processar imagem.';
+  }
+}
+
+function comprimirImagem(file, maxW, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ── MODAL PRODUTO ── */
+function abrirModalNovo() {
+  editingId = null;
+  uploadedBase64 = '';
+  document.getElementById('modalProdTitle').textContent = 'Novo Produto';
+  document.getElementById('fNome').value        = '';
+  document.getElementById('fDesc').value        = '';
+  document.getElementById('fPreco').value       = '';
+  document.getElementById('fPrecoDelivery').value = '';
+  document.getElementById('fEstoque').value     = '0';
+  document.getElementById('fEstoqueMin').value  = '5';
+  document.getElementById('fImagem').value      = '';
+  document.getElementById('fAtivo').checked     = true;
+  document.getElementById('imgPreview').innerHTML = '📷';
+  document.getElementById('uploadStatus').textContent = '';
+  setImgTab('url');
+
+  const cats = DB.getTodasCategorias();
+  const fCat = document.getElementById('fCat');
+  fCat.innerHTML = '<option value="_nova">+ Nova categoria…</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (cats.length > 0) fCat.value = cats[0];
+
+  document.getElementById('modalProduto').classList.add('open');
+}
+
+function abrirModalEditar(id) {
+  const p = DB.getTodosProdutos().find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  uploadedBase64 = '';
+  document.getElementById('modalProdTitle').textContent = 'Editar Produto';
+  document.getElementById('fNome').value        = p.nome;
+  document.getElementById('fDesc').value        = p.descricao||'';
+  document.getElementById('fPreco').value       = p.preco;
+  document.getElementById('fPrecoDelivery').value = p.precoDelivery||p.preco;
+  document.getElementById('fEstoque').value     = p.estoque??0;
+  document.getElementById('fEstoqueMin').value  = p.estoqueMin??5;
+  document.getElementById('fAtivo').checked     = p.ativo !== false;
+  document.getElementById('uploadStatus').textContent = '';
+
+  // Se a imagem existente é base64, mostra na aba upload; caso contrário, aba URL
+  const isBase64 = (p.imagem||'').startsWith('data:');
+  if (isBase64) {
+    setImgTab('upload');
+    uploadedBase64 = p.imagem;
+    document.getElementById('imgPreview').innerHTML = `<img src="${p.imagem}" alt="preview">`;
+    document.getElementById('uploadStatus').textContent = '✅ Imagem atual carregada';
+    document.getElementById('fImagem').value = '';
+  } else {
+    setImgTab('url');
+    document.getElementById('fImagem').value = p.imagem||'';
+    atualizarPreviewImg();
+  }
+
+  const cats = DB.getTodasCategorias();
+  const fCat = document.getElementById('fCat');
+  fCat.innerHTML = '<option value="_nova">+ Nova categoria…</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  fCat.value = p.categoria;
+
+  document.getElementById('modalProduto').classList.add('open');
+}
+
+function atualizarPreviewImg() {
+  const url = document.getElementById('fImagem').value.trim();
+  const prev = document.getElementById('imgPreview');
+  if (url) {
+    prev.innerHTML = `<img src="${url}" onerror="this.parentElement.innerHTML='❌ URL inválida'" alt="preview">`;
+  } else {
+    prev.innerHTML = '📷';
+  }
+}
+
+function salvarProduto() {
+  const nome = document.getElementById('fNome').value.trim();
+  if (!nome) { alert('Digite o nome do produto!'); return; }
+
+  let cat = document.getElementById('fCat').value;
+  if (cat === '_nova') {
+    cat = prompt('Nome da nova categoria:');
+    if (!cat) return;
+  }
+
+  const dados = {
+    nome,
+    categoria: cat,
+    descricao:     document.getElementById('fDesc').value.trim(),
+    preco:         parseFloat(document.getElementById('fPreco').value)  || 0,
+    precoDelivery: parseFloat(document.getElementById('fPrecoDelivery').value) || parseFloat(document.getElementById('fPreco').value) || 0,
+    estoque:       parseInt(document.getElementById('fEstoque').value)  || 0,
+    estoqueMin:    parseInt(document.getElementById('fEstoqueMin').value) || 5,
+    imagem:        uploadedBase64 || document.getElementById('fImagem').value.trim(),
+    ativo:         document.getElementById('fAtivo').checked,
+  };
+
+  if (editingId) {
+    DB.updateProduto(editingId, dados);
+    toast('Produto atualizado!', 'success');
+  } else {
+    DB.addProduto(dados);
+    toast('Produto adicionado!', 'success');
+  }
+
+  fecharModal();
+  renderProdutos();
+  popularFiltros();
+}
+
+function fecharModal() {
+  document.getElementById('modalProduto').classList.remove('open');
+}
+
+function toggleAtivo(id, val) {
+  DB.updateProduto(id, { ativo: val });
+  toast(val ? 'Produto ativado!' : 'Produto desativado!', 'success');
+}
+
+function confirmarExcluir(id, nome) {
+  if (!confirm(`Excluir o produto "${nome}"? Esta ação não pode ser desfeita.`)) return;
+  DB.deleteProduto(id);
+  renderProdutos();
+  toast('Produto excluído!', 'success');
+}
+
+/* ── MODAL ESTOQUE ── */
+function abrirModalEstoque(id) {
+  stockProdId = id;
+  const p = DB.getTodosProdutos().find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('estModalTitle').textContent = `Estoque: ${p.nome}`;
+  document.getElementById('estModalInfo').innerHTML = `Estoque atual: <b style="font-size:18px">${p.estoque??0}</b> unidades &nbsp;|&nbsp; Mínimo: ${p.estoqueMin??5}`;
+  document.getElementById('estTipo').value  = 'entrada';
+  document.getElementById('estQtd').value   = '1';
+  document.getElementById('estMotivo').value = '';
+
+  const movs = DB.getMovimentosEstoque().filter(m => m.produtoId === id).slice(0,10);
+  const movList = document.getElementById('movList');
+  movList.innerHTML = movs.length ? movs.map(m => `
+    <div class="mov-item">
+      <span class="mov-tipo ${m.tipo}">${m.tipo === 'entrada' ? '+' : m.tipo === 'saida' ? '-' : '~'} ${m.quantidade} (${m.tipo})</span>
+      <span style="color:#9ca3af">${m.motivo||'—'}</span>
+      <span style="color:#9ca3af">${new Date(m.criadoEm).toLocaleDateString('pt-BR')}</span>
+    </div>`).join('') : '<div style="color:#bbb;text-align:center;padding:12px;font-size:12px">Sem movimentos registrados.</div>';
+
+  document.getElementById('modalEstoque').classList.add('open');
+}
+
+function fecharModalEst() {
+  document.getElementById('modalEstoque').classList.remove('open');
+}
+
+function confirmarMovimento() {
+  if (!stockProdId) return;
+  const tipo     = document.getElementById('estTipo').value;
+  const qtd      = parseInt(document.getElementById('estQtd').value) || 0;
+  const motivo   = document.getElementById('estMotivo').value.trim();
+
+  if (qtd <= 0) { alert('Informe uma quantidade válida!'); return; }
+
+  DB.addMovimentoEstoque({ produtoId: stockProdId, tipo, quantidade: qtd, motivo });
+
+  const p = DB.getTodosProdutos().find(x => x.id === stockProdId);
+  document.getElementById('estModalInfo').innerHTML = `Estoque atual: <b style="font-size:18px">${p?.estoque??0}</b> unidades &nbsp;|&nbsp; Mínimo: ${p?.estoqueMin??5}`;
+
+  const movs = DB.getMovimentosEstoque().filter(m => m.produtoId === stockProdId).slice(0,10);
+  document.getElementById('movList').innerHTML = movs.map(m => `
+    <div class="mov-item">
+      <span class="mov-tipo ${m.tipo}">${m.tipo === 'entrada' ? '+' : m.tipo === 'saida' ? '-' : '~'} ${m.quantidade} (${m.tipo})</span>
+      <span style="color:#9ca3af">${m.motivo||'—'}</span>
+      <span style="color:#9ca3af">${new Date(m.criadoEm).toLocaleDateString('pt-BR')}</span>
+    </div>`).join('');
+
+  document.getElementById('estQtd').value    = '1';
+  document.getElementById('estMotivo').value = '';
+  renderEstoque(); renderProdutos();
+  toast(`Estoque ${tipo === 'entrada' ? 'adicionado' : tipo === 'saida' ? 'baixado' : 'ajustado'}!`, 'success');
+}
+</script>
+</body>
+</html>

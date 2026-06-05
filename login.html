@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVARROS.BEER – Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'Outfit',system-ui,sans-serif;
+  background:#000; color:#f0f0f0;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:16px; position:relative; overflow:hidden;
+}
+body::before{
+  content:'NAVARROS.BEER';
+  position:fixed; bottom:-30px; right:-10px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(80px,14vw,160px); letter-spacing:4px;
+  color:rgba(255,255,255,0.025); pointer-events:none; white-space:nowrap; line-height:1;
+}
+
+.wrap{
+  display:grid; grid-template-columns:1fr 1fr;
+  width:100%; max-width:880px;
+  background:#0d0d0d; border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px; overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,0.8);
+  position:relative; z-index:1;
+}
+
+/* ── LEFT ── */
+.side-brand{
+  background:#111; border-right:1px solid rgba(255,255,255,0.07);
+  padding:48px 40px; display:flex; flex-direction:column; justify-content:space-between;
+}
+.logo{ font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:3px; color:#fff; margin-bottom:4px; }
+.tagline{ font-size:0.75rem; color:#444; letter-spacing:2px; text-transform:uppercase; margin-bottom:40px; }
+.features{ display:flex; flex-direction:column; gap:16px; flex:1; justify-content:center; }
+.feat{
+  display:flex; align-items:flex-start; gap:12px;
+  padding:14px; background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.05); border-radius:10px;
+}
+.feat-icon{ font-size:1.3rem; flex-shrink:0; }
+.feat-text h4{ font-size:0.85rem; font-weight:700; color:#d0d0d0; margin-bottom:2px; }
+.feat-text p{ font-size:0.75rem; color:#555; line-height:1.5; }
+.foot{ font-size:0.7rem; color:#333; margin-top:28px; }
+
+/* ── RIGHT ── */
+.side-form{ padding:44px 40px; display:flex; flex-direction:column; justify-content:center; }
+.form-head h2{ font-family:'Bebas Neue',sans-serif; font-size:1.9rem; letter-spacing:2px; margin-bottom:5px; }
+.form-head p{ font-size:0.85rem; color:#555; margin-bottom:28px; }
+
+.field{ display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.field label{ font-size:0.7rem; font-weight:700; color:#555; text-transform:uppercase; letter-spacing:1.5px; }
+.field input{
+  padding:13px 14px; background:#111; border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:9px; color:#f0f0f0; font-family:inherit; font-size:0.95rem;
+  transition:border-color 0.15s;
+}
+.field input:focus{ outline:none; border-color:rgba(255,255,255,0.4); background:#0d0d0d; }
+.field input::placeholder{ color:#333; }
+
+.error{
+  display:none; font-size:0.8rem; color:#ef4444;
+  padding:9px 12px; background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.2); border-radius:8px; margin-bottom:12px;
+}
+.error.show{ display:block; }
+
+.btn-login{
+  width:100%; padding:14px; background:#fff; color:#000; border:none;
+  border-radius:9px; font-family:'Bebas Neue',sans-serif; font-size:1.15rem;
+  letter-spacing:2px; cursor:pointer; transition:background 0.15s, transform 0.1s;
+  margin-bottom:22px;
+}
+.btn-login:hover{ background:#e8e8e8; }
+.btn-login:active{ transform:scale(0.98); }
+
+.divider{
+  display:flex; align-items:center; gap:10px; margin-bottom:14px;
+  font-size:0.7rem; color:#333; text-transform:uppercase; letter-spacing:1px;
+}
+.divider::before,.divider::after{ content:''; flex:1; height:1px; background:rgba(255,255,255,0.07); }
+
+.demo-title{ font-size:0.7rem; font-weight:700; color:#444; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.demo-cards{ display:flex; flex-direction:column; gap:7px; }
+.demo-card{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:11px 13px; background:#111; border:1px solid rgba(255,255,255,0.07);
+  border-radius:9px; cursor:pointer; transition:border-color 0.15s, background 0.15s;
+}
+.demo-card:hover{ border-color:rgba(255,255,255,0.2); background:#161616; }
+.dc-left{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+.dc-avatar{
+  width:32px; height:32px; border-radius:50%;
+  background:#1a1a1a; border:1px solid rgba(255,255,255,0.1);
+  display:flex; align-items:center; justify-content:center; font-size:0.9rem; flex-shrink:0;
+}
+.dc-name{ font-size:0.82rem; font-weight:700; color:#d0d0d0; white-space:nowrap; }
+.dc-email{ font-size:0.7rem; color:#444; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dc-badge{
+  font-size:0.62rem; font-weight:700; padding:2px 8px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:0.5px; flex-shrink:0;
+}
+.dc-badge.dono  { background:rgba(255,255,255,0.08); color:#aaa; border:1px solid rgba(255,255,255,0.12); }
+.dc-badge.garcom{ background:rgba(255,255,255,0.04); color:#555; border:1px solid rgba(255,255,255,0.07); }
+
+.link-card{ text-align:center; margin-top:16px; font-size:0.78rem; color:#333; }
+.link-card a{ color:#666; text-decoration:none; font-weight:600; }
+.link-card a:hover{ color:#fff; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:660px){
+  .wrap{ grid-template-columns:1fr; }
+  .side-brand{ display:none; }
+  .side-form{ padding:36px 24px; }
+  body::before{ display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- BRAND -->
+  <div class="side-brand">
+    <div>
+      <div class="logo">NAVARROS.BEER</div>
+      <div class="tagline">Painel de Gestão</div>
+    </div>
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">🪑</div>
+        <div class="feat-text"><h4>Painel de Mesas</h4><p>Controle de mesas, pedidos e status em tempo real.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🍺</div>
+        <div class="feat-text"><h4>Atendimento Garçom</h4><p>Interface rápida para lançar pedidos nas mesas.</p></div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <div class="feat-text"><h4>Dashboard & Estoque</h4><p>Vendas por semana/mês e controle de estoque.</p></div>
+      </div>
+    </div>
+    <div class="foot">© 2025 Navarros Beer · Todos os direitos reservados</div>
+  </div>
+
+  <!-- FORM -->
+  <div class="side-form">
+    <div class="form-head">
+      <h2>BEM-VINDO</h2>
+      <p>Acesse o painel de gestão</p>
+    </div>
+
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="fEmail" placeholder="seu@navarros.beer" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="fSenha" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <div class="error" id="errMsg">E-mail ou senha incorretos.</div>
+
+    <button class="btn-login" onclick="doLogin()">ENTRAR NO SISTEMA</button>
+
+    <div class="divider"><span>Contas de demonstração</span></div>
+    <div class="demo-title">Clique para preencher e entrar</div>
+    <div class="demo-cards">
+      <div class="demo-card" onclick="loginDemo('dono@navarros.beer','admin123')">
+        <div class="dc-left">
+          <div class="dc-avatar">👑</div>
+          <div><div class="dc-name">João Navarro</div><div class="dc-email">dono@navarros.beer · admin123</div></div>
+        </div>
+        <span class="dc-badge dono">Dono</span>
+      </div>
+      <div class="demo-card" onclick="loginDemo('garcom@navarros.beer','garcom123')">
+        <div class="dc-left">
+          <div class="dc-avatar">🍺</div>
+          <div><div class="dc-name">Carlos Garçom</div><div class="dc-email">garcom@navarros.beer · garcom123</div></div>
+        </div>
+        <span class="dc-badge garcom">Garçom</span>
+      </div>
+      <div class="demo-card" onclick="loginDemo('garcom2@navarros.beer','garcom456')">
+        <div class="dc-left">
+          <div class="dc-avatar">🍺</div>
+          <div><div class="dc-name">Ana Garçom</div><div class="dc-email">garcom2@navarros.beer · garcom456</div></div>
+        </div>
+        <span class="dc-badge garcom">Garçom</span>
+      </div>
+    </div>
+
+    <div class="link-card"><a href="cardapio.html">→ Ver cardápio do cliente</a></div>
+  </div>
+</div>
+
+<!-- api.js deve vir antes de auth.js -->
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+// Redirecionar se já logado
+(function () {
+  try {
+    var u = JSON.parse(localStorage.getItem('nb_auth') || 'null');
+    if (u && u.role) {
+      window.location.replace(u.role === 'garcom' ? 'garcom.html' : 'index.html');
+    }
+  } catch (e) {}
+})();
+
+function showErr(msg) {
+  var el = document.getElementById('errMsg');
+  el.textContent = msg || 'E-mail ou senha incorretos.';
+  el.classList.add('show');
+}
+
+function hideErr() {
+  document.getElementById('errMsg').classList.remove('show');
+}
+
+var _logging = false;
+
+async function doLogin() {
+  if (_logging) return;
+  var email = document.getElementById('fEmail').value.trim();
+  var senha = document.getElementById('fSenha').value;
+  hideErr();
+
+  if (!email || !senha) { showErr('Preencha e-mail e senha.'); return; }
+
+  var btn = document.querySelector('button[onclick="doLogin()"]') ||
+            document.querySelector('.btn-login');
+  _logging = true;
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando…'; }
+
+  try {
+    var data = await authLogin(email, senha);
+    if (!data) { showErr('E-mail ou senha incorretos.'); return; }
+    window.location.href = data.redirect;
+  } catch (err) {
+    showErr(err.message || 'E-mail ou senha incorretos.');
+  } finally {
+    _logging = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
+  }
+}
+
+// Preenche E FAZ LOGIN automaticamente ao clicar na conta demo
+function loginDemo(email, senha) {
+  document.getElementById('fEmail').value = email;
+  document.getElementById('fSenha').value = senha;
+  hideErr();
+  doLogin();
+}
+
+// Enter para logar
+['fEmail','fSenha'].forEach(function(id) {
+  document.getElementById(id).addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+</script>
+</body>
+</html>

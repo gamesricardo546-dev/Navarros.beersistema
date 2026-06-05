@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVARROS.BEER - Painel de Mesas</title>
+<link rel="stylesheet" href="css/style.css">
+<script>!function(){var a=null;try{a=JSON.parse(localStorage.getItem('nb_auth'))}catch(e){}if(!a){location.replace('login.html');}else if(a.role==='garcom'){location.replace('garcom.html');}}();</script>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">🍺 <strong>NAVARROS.BEER</strong></div>
+  <div class="nav-links">
+    <a href="index.html" class="active">Painel de Mesas</a>
+    <a href="garcom.html">Atendimento</a>
+    <a href="pedidos.html">Pedidos</a>
+    <a href="configuracoes.html">Configurações</a>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header">
+    <h1>Painel de Mesas</h1>
+    <p>Gerencie o status de todas as mesas e pedidos</p>
+  </div>
+
+  <div class="filter-bar">
+    <select id="filtroSalao" onchange="filtrarMesas()">
+      <option value="todos">Todos os Salões</option>
+    </select>
+    <div class="legend">
+      <span class="dot livre"></span> Livre
+      <span class="dot ocupada"></span> Ocupada
+      <span class="dot aguardando"></span> Aguardando
+    </div>
+  </div>
+
+  <div class="mesas-grid" id="mesasGrid"></div>
+</main>
+
+<!-- Modal Abrir Mesa -->
+<div id="modalAbrirMesa" class="modal">
+  <div class="modal-content">
+    <h2 id="modalAbrirTitulo">Abrir Mesa</h2>
+    <p>Confirmar abertura da mesa?</p>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmarAbrirMesa()">Confirmar</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modalAbrirMesa')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Adicionar Item -->
+<div id="modalAddItem" class="modal">
+  <div class="modal-content modal-large">
+    <h2>Adicionar Item - <span id="addItemMesaNome"></span></h2>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="itemCategoria" onchange="filtrarCardapio()">
+        <option value="todos">Todas</option>
+      </select>
+    </div>
+    <div class="cardapio-lista" id="cardapioLista"></div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Observação</label>
+      <input type="text" id="itemObs" placeholder="Ex: sem gelo, bem passado...">
+    </div>
+    <div id="itemSelecionado" class="item-selecionado-info" style="display:none"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmarAddItem()">Adicionar</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modalAddItem')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Pedido da Mesa -->
+<div id="modalPedidoMesa" class="modal">
+  <div class="modal-content modal-large">
+    <h2>Pedidos - <span id="pedidoMesaNome"></span></h2>
+    <div id="pedidoMesaLista"></div>
+    <div class="pedido-total">
+      <strong>Total: <span id="pedidoMesaTotal"></span></strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="fecharConta()">Fechar Conta</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modalPedidoMesa')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Divisão -->
+<div id="modalDivisao" class="modal">
+  <div class="modal-content">
+    <h2>Dividir Conta - <span id="divisaoMesaNome"></span></h2>
+    <div class="form-group">
+      <label>Número de pessoas</label>
+      <input type="number" id="divisaoPessoas" min="2" max="20" value="2" oninput="calcularDivisao()">
+    </div>
+    <div id="divisaoResultado" class="divisao-resultado"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="fecharModal('modalDivisao')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Histórico -->
+<div id="modalHistorico" class="modal">
+  <div class="modal-content modal-large">
+    <h2>Histórico - <span id="historicoMesaNome"></span></h2>
+    <div id="historicoLista"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="fecharModal('modalHistorico')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/mesas.js"></script>
+<script>authRenderNav();</script>
+</body>
+</html>

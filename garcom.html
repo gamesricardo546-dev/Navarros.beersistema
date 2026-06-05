@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#111">
+<title>NAVARROS.BEER – Atendimento</title>
+<script>
+  !function(){var a=null;try{a=JSON.parse(localStorage.getItem('nb_auth'))}catch(e){}
+  if(!a){location.replace('login.html');}}();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Outfit',system-ui,sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;min-height:100dvh}
+
+/* ── HEADER ── */
+.header{
+  position:sticky;top:0;z-index:100;
+  background:#111;border-bottom:1px solid rgba(255,255,255,0.08);
+  padding:0 16px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.header-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:#fff}
+.header-logo span{color:#fff;opacity:0.4}
+.header-right{display:flex;align-items:center;gap:8px}
+.header-user{font-size:12px;color:#555;white-space:nowrap}
+.btn-icon{
+  width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);color:#888;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;
+  transition:0.15s;touch-action:manipulation;
+}
+.btn-icon:hover{background:rgba(255,255,255,0.08);color:#fff}
+.btn-sair{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.2);color:#ef4444}
+.btn-sair:hover{background:rgba(239,68,68,0.2)}
+
+/* ── SALÃO TABS ── */
+.salao-tabs{
+  background:#111;border-bottom:1px solid rgba(255,255,255,0.07);
+  padding:0 16px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;
+}
+.salao-tabs::-webkit-scrollbar{display:none}
+.salao-tab{
+  padding:10px 16px;border:none;background:transparent;
+  font-size:12px;font-weight:600;color:#555;cursor:pointer;
+  border-bottom:2.5px solid transparent;white-space:nowrap;font-family:inherit;
+  transition:0.15s;touch-action:manipulation;
+}
+.salao-tab:hover{color:#aaa}
+.salao-tab.active{color:#fff;border-bottom-color:#fff}
+
+/* ── MESA GRID ── */
+.mesas-wrap{padding:16px;max-width:1000px;margin:0 auto}
+.mesas-titulo{font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px}
+.mesas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+
+/* ── MESA CARD ── */
+.mesa-card{
+  background:#1a1a1a;border:1.5px solid rgba(255,255,255,0.07);border-radius:14px;
+  padding:16px;cursor:pointer;transition:0.15s;touch-action:manipulation;
+  user-select:none;
+}
+.mesa-card:hover{background:#222;border-color:rgba(255,255,255,0.15)}
+.mesa-card:active{transform:scale(0.97)}
+.mesa-card.livre    {border-color:rgba(34,197,94,0.25)}
+.mesa-card.ocupada  {border-color:rgba(239,68,68,0.3)}
+.mesa-card.aguardando{border-color:rgba(234,179,8,0.35)}
+
+.mesa-status-dot{
+  width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0;
+}
+.dot-livre    {background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.5)}
+.dot-ocupada  {background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5)}
+.dot-aguardando{background:#eab308;box-shadow:0 0 6px rgba(234,179,8,0.5)}
+
+.mesa-header{display:flex;align-items:center;margin-bottom:10px}
+.mesa-nome{font-weight:700;font-size:14px;color:#fff;flex:1}
+.mesa-status-label{font-size:10px;font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px}
+.mesa-status-label.livre    {color:#22c55e}
+.mesa-status-label.ocupada  {color:#ef4444}
+.mesa-status-label.aguardando{color:#eab308}
+.mesa-itens{font-size:11px;color:#555;margin-bottom:3px}
+.mesa-total{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;letter-spacing:1px}
+.mesa-total.zero{color:#333}
+
+/* ── DETALHE DA MESA (painel lateral / bottom sheet) ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;backdrop-filter:blur(3px)}
+.overlay.open{display:block}
+
+.mesa-panel{
+  position:fixed;right:0;top:0;bottom:0;width:min(420px,100vw);
+  background:#111;border-left:1px solid rgba(255,255,255,0.08);
+  z-index:201;display:flex;flex-direction:column;
+  transform:translateX(110%);transition:transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  box-shadow:-8px 0 40px rgba(0,0,0,0.6);
+}
+.mesa-panel.open{transform:translateX(0)}
+
+.panel-header{
+  display:flex;align-items:center;gap:10px;
+  padding:16px;border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.panel-header-info{flex:1}
+.panel-mesa-nome{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;color:#fff}
+.panel-salao{font-size:11px;color:#555;margin-top:1px}
+.panel-close{
+  width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);
+  background:transparent;color:#666;cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;touch-action:manipulation;
+  transition:0.15s;
+}
+.panel-close:hover{background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3)}
+
+.panel-body{flex:1;overflow-y:auto;padding:14px 16px;-webkit-overflow-scrolling:touch}
+
+.pedido-vazio{text-align:center;padding:40px 16px;color:#444;font-size:13px}
+.pedido-vazio-icon{font-size:2.5rem;margin-bottom:8px;opacity:0.3;display:block}
+
+.pedido-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:11px 12px;background:#1a1a1a;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;
+}
+.pedido-item-info{flex:1;min-width:0}
+.pedido-item-nome{font-size:13px;font-weight:700;color:#f0f0f0}
+.pedido-item-obs{font-size:11px;color:#555;margin-top:2px;font-style:italic}
+.pedido-item-qtd{
+  font-size:11px;font-weight:700;color:#888;
+  background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:4px;
+  margin-top:4px;display:inline-block;
+}
+.pedido-item-preco{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;white-space:nowrap;padding-top:2px}
+
+.panel-total{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;background:#0d0d0d;border-top:1px solid rgba(255,255,255,0.07);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.panel-total-label{font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.8px}
+.panel-total-valor{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:1px}
+
+.panel-footer{padding:14px 16px;display:flex;gap:8px}
+.btn-add{
+  flex:1;padding:13px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;border-radius:10px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:0.15s;touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-add:hover{background:rgba(255,255,255,0.12)}
+.btn-fechar-conta{
+  flex:1;padding:13px;background:#fff;border:none;color:#000;
+  border-radius:10px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;
+  cursor:pointer;transition:0.15s;touch-action:manipulation;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-fechar-conta:hover{background:#e8e8e8}
+.btn-fechar-conta:disabled{background:#222;color:#555;cursor:not-allowed}
+
+/* ── MODAL ADICIONAR ITEM ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.75);z-index:300;
+  align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+
+.add-modal{
+  background:#111;border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px 20px 0 0;width:100%;max-width:500px;
+  max-height:85vh;display:flex;flex-direction:column;
+  animation:slideUp 0.28s cubic-bezier(0.25,0.46,0.45,0.94);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-handle{width:40px;height:4px;background:#2a2a2a;border-radius:2px;margin:10px auto 0}
+
+.add-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.add-modal-title{font-weight:700;font-size:15px}
+.add-modal-close{
+  width:32px;height:32px;border-radius:50%;border:none;background:#1a1a1a;
+  color:#666;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;
+  touch-action:manipulation;
+}
+
+.add-cats{
+  display:flex;gap:6px;padding:12px 16px;overflow-x:auto;scrollbar-width:none;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.add-cats::-webkit-scrollbar{display:none}
+.cat-chip-g{
+  padding:6px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:20px;
+  font-size:12px;font-weight:600;color:#666;background:transparent;cursor:pointer;
+  white-space:nowrap;font-family:inherit;touch-action:manipulation;transition:0.15s;
+}
+.cat-chip-g.active,.cat-chip-g:hover{background:#fff;border-color:#fff;color:#000}
+
+.add-search{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.add-search input{
+  width:100%;padding:9px 12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;color:#f0f0f0;font-family:inherit;font-size:14px;
+}
+.add-search input:focus{outline:none;border-color:rgba(255,255,255,0.3)}
+.add-search input::placeholder{color:#444}
+
+.prod-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.prod-row{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:0.15s;
+}
+.prod-row:hover{background:rgba(255,255,255,0.03)}
+.prod-row-img{
+  width:44px;height:44px;border-radius:8px;background:#1a1a1a;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;
+  border:1px solid rgba(255,255,255,0.06);
+}
+.prod-row-img img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.prod-row-info{flex:1;min-width:0}
+.prod-row-nome{font-size:13px;font-weight:700;color:#f0f0f0;margin-bottom:2px}
+.prod-row-desc{font-size:11px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-row-preco{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;white-space:nowrap}
+
+/* ── MODAL CONFIRMAR ITEM ── */
+.confirm-modal{
+  background:#111;border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px 20px 0 0;width:100%;max-width:440px;
+  animation:slideUp 0.25s ease;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.confirm-body{padding:16px}
+.confirm-nome{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px}
+.confirm-preco{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:#fff}
+.confirm-divider{height:1px;background:rgba(255,255,255,0.07);margin:14px 0}
+.qty-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.qty-label{font-size:13px;font-weight:600;color:#aaa}
+.qty-ctrls{display:flex;align-items:center;gap:14px}
+.qty-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.06);color:#fff;font-size:18px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;
+  transition:0.15s;
+}
+.qty-btn:hover{background:rgba(255,255,255,0.12)}
+.qty-val{font-size:18px;font-weight:800;min-width:28px;text-align:center}
+.obs-input{
+  width:100%;padding:10px 12px;background:#1a1a1a;border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;color:#f0f0f0;font-family:inherit;font-size:14px;margin-bottom:14px;
+}
+.obs-input:focus{outline:none;border-color:rgba(255,255,255,0.3)}
+.obs-input::placeholder{color:#444}
+.btn-confirmar{
+  width:100%;padding:14px;background:#fff;color:#000;border:none;
+  border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;
+  cursor:pointer;touch-action:manipulation;transition:0.15s;
+}
+.btn-confirmar:hover{background:#e8e8e8}
+
+/* ── ESTADO VAZIO ── */
+.empty-wrap{text-align:center;padding:60px 20px;color:#333}
+.empty-icon{font-size:3rem;display:block;margin-bottom:12px;opacity:0.4}
+
+@media(min-width:640px){
+  .modal-overlay{align-items:center}
+  .add-modal,.confirm-modal{border-radius:20px;margin:16px;max-height:80vh}
+  .modal-handle{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">NAVARROS<span>.</span>BEER</div>
+  <div class="header-right">
+    <span class="header-user" id="headerUser"></span>
+    <button class="btn-icon" onclick="renderMesas()" title="Atualizar">⟳</button>
+    <button class="btn-icon btn-sair" onclick="sair()" title="Sair">⏻</button>
+  </div>
+</header>
+
+<!-- SALÃO TABS -->
+<div class="salao-tabs" id="salaoTabs"></div>
+
+<!-- MESAS -->
+<div class="mesas-wrap">
+  <div class="mesas-titulo" id="mesasTitulo">Carregando…</div>
+  <div class="mesas-grid" id="mesasGrid"></div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="fecharPanel()"></div>
+
+<!-- PAINEL DA MESA -->
+<div class="mesa-panel" id="mesaPanel">
+  <div class="panel-header">
+    <div class="panel-header-info">
+      <div class="panel-mesa-nome" id="panelNome">Mesa 01</div>
+      <div class="panel-salao" id="panelSalao">Salão Interno</div>
+    </div>
+    <button class="panel-close" onclick="fecharPanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+  <div class="panel-total" id="panelTotalWrap">
+    <span class="panel-total-label">Total</span>
+    <span class="panel-total-valor" id="panelTotal">R$ 0,00</span>
+  </div>
+  <div class="panel-footer">
+    <button class="btn-add" onclick="abrirAddItem()">➕ Adicionar Item</button>
+    <button class="btn-fechar-conta" id="btnFecharConta" onclick="fecharConta()">🧾 Fechar Conta</button>
+  </div>
+</div>
+
+<!-- MODAL: ADICIONAR ITEM -->
+<div class="modal-overlay" id="addModal" onclick="if(event.target===this)fecharAddModal()">
+  <div class="add-modal">
+    <div class="modal-handle"></div>
+    <div class="add-modal-header">
+      <span class="add-modal-title">Adicionar Item</span>
+      <button class="add-modal-close" onclick="fecharAddModal()">✕</button>
+    </div>
+    <div class="add-cats" id="addCats"></div>
+    <div class="add-search"><input type="search" id="addSearch" placeholder="Buscar produto…" oninput="renderProdList()"></div>
+    <div class="prod-list" id="prodList"></div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR QUANTIDADE -->
+<div class="modal-overlay" id="confirmModal" onclick="if(event.target===this)fecharConfirmModal()">
+  <div class="confirm-modal">
+    <div class="modal-handle"></div>
+    <div class="confirm-body">
+      <div class="confirm-nome" id="confNome"></div>
+      <div class="confirm-preco" id="confPreco"></div>
+      <div class="confirm-divider"></div>
+      <div class="qty-row">
+        <span class="qty-label">Quantidade</span>
+        <div class="qty-ctrls">
+          <button class="qty-btn" onclick="mudaQtd(-1)">−</button>
+          <span class="qty-val" id="confQtd">1</span>
+          <button class="qty-btn" onclick="mudaQtd(1)">+</button>
+        </div>
+      </div>
+      <input type="text" class="obs-input" id="confObs" placeholder="Observação (ex: sem gelo, bem passado…)">
+      <button class="btn-confirmar" onclick="confirmarAdd()">✅ Adicionar à Mesa</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+// ── Estado ──
+const user = authGetUser();
+let salaoAtivo  = 'todos';
+let mesaAtiva   = null;
+let catAtiva    = 'todos';
+let confProduto = null;
+let confQtd     = 1;
+
+// ── Init ──
+document.getElementById('headerUser').textContent = user?.nome || '';
+popularSaloes();
+renderMesas();
+setInterval(renderMesas, 15000); // auto-refresh a cada 15s
+
+function fmt(v){ return 'R$ '+Number(v||0).toFixed(2).replace('.',','); }
+
+// ── Salões ──
+function popularSaloes(){
+  const tabs = document.getElementById('salaoTabs');
+  const saloes = ['todos', ...DB.getSaloes()];
+  tabs.innerHTML = saloes.map(s =>
+    `<button class="salao-tab${s==='todos'?' active':''}" onclick="setSalao('${s}',this)">
+      ${s==='todos'?'Todos':s}
+    </button>`
+  ).join('');
+}
+
+function setSalao(s, btn){
+  salaoAtivo = s;
+  document.querySelectorAll('.salao-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMesas();
+}
+
+// ── Mesas ──
+function renderMesas(){
+  const mesas = DB.getMesas().filter(m =>
+    salaoAtivo === 'todos' || m.salao === salaoAtivo
+  );
+  const titulo = document.getElementById('mesasTitulo');
+  const grid   = document.getElementById('mesasGrid');
+  titulo.textContent = `${mesas.length} mesa${mesas.length!==1?'s':''} ${salaoAtivo!=='todos'?'– '+salaoAtivo:''}`;
+
+  if(!mesas.length){
+    grid.innerHTML = '<div class="empty-wrap"><span class="empty-icon">🪑</span>Nenhuma mesa neste salão.</div>';
+    return;
+  }
+
+  grid.innerHTML = mesas.map(m=>{
+    const est   = DB.getEstadoMesa(m.id);
+    const st    = est.status || 'livre';
+    const itens = (est.pedidos||[]).reduce((s,p)=>s+p.quantidade,0);
+    const total = DB.calcularTotalMesa(m.id);
+    const dotClass = {livre:'dot-livre',ocupada:'dot-ocupada',aguardando:'dot-aguardando'}[st]||'dot-livre';
+    const stLabel  = {livre:'Livre',ocupada:'Ocupada',aguardando:'Aguardando'}[st]||'Livre';
+
+    return `
+    <div class="mesa-card ${st}" onclick="abrirMesa(${m.id})">
+      <div class="mesa-header">
+        <span class="mesa-status-dot ${dotClass}"></span>
+        <span class="mesa-nome">${m.nome}</span>
+      </div>
+      <div class="mesa-status-label ${st}">${stLabel}</div>
+      <div class="mesa-itens">${itens>0?itens+' ite'+(itens===1?'m':'ns'):'Sem pedidos'}</div>
+      <div class="mesa-total ${total===0?'zero':''}">${total>0?fmt(total):'—'}</div>
+    </div>`;
+  }).join('');
+
+  // Atualizar painel se estiver aberto
+  if(mesaAtiva) renderPanelBody();
+}
+
+// ── Abrir mesa ──
+function abrirMesa(id){
+  const mesa = DB.getMesas().find(m=>m.id===id);
+  if(!mesa) return;
+  mesaAtiva = id;
+
+  const est = DB.getEstadoMesa(id);
+  document.getElementById('panelNome').textContent  = mesa.nome;
+  document.getElementById('panelSalao').textContent = mesa.salao;
+
+  // Se livre → oferecer abrir
+  if(est.status==='livre'){
+    if(!confirm(`Abrir ${mesa.nome}?`)) return;
+    DB.setEstadoMesa(id,{status:'ocupada',pedidos:[],abertaEm:Date.now()});
+    renderMesas();
+  }
+
+  renderPanelBody();
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('mesaPanel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function renderPanelBody(){
+  if(!mesaAtiva) return;
+  const est    = DB.getEstadoMesa(mesaAtiva);
+  const pedidos = est.pedidos||[];
+  const total   = DB.calcularTotalMesa(mesaAtiva);
+
+  document.getElementById('panelTotal').textContent = fmt(total);
+  document.getElementById('btnFecharConta').disabled = pedidos.length===0;
+
+  const body = document.getElementById('panelBody');
+  if(!pedidos.length){
+    body.innerHTML='<div class="pedido-vazio"><span class="pedido-vazio-icon">🍽️</span>Nenhum item ainda.<br>Adicione itens para começar.</div>';
+    return;
+  }
+
+  body.innerHTML = pedidos.map(p=>`
+    <div class="pedido-item">
+      <div class="pedido-item-info">
+        <div class="pedido-item-nome">${p.nome}</div>
+        ${p.obs?`<div class="pedido-item-obs">💬 ${p.obs}</div>`:''}
+        <span class="pedido-item-qtd">${p.quantidade}×</span>
+      </div>
+      <div class="pedido-item-preco">${fmt(p.preco*p.quantidade)}</div>
+    </div>`).join('');
+}
+
+function fecharPanel(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('mesaPanel').classList.remove('open');
+  document.body.style.overflow='';
+  mesaAtiva=null;
+}
+
+// ── Fechar conta ──
+function fecharConta(){
+  if(!mesaAtiva) return;
+  const mesa  = DB.getMesas().find(m=>m.id===mesaAtiva);
+  const est   = DB.getEstadoMesa(mesaAtiva);
+  const total = DB.calcularTotalMesa(mesaAtiva);
+  if(!confirm(`Fechar conta de ${mesa.nome}?\nTotal: ${fmt(total)}`)) return;
+
+  DB.addHistorico({
+    mesaId: mesaAtiva, mesaNome: mesa.nome, salao: mesa.salao,
+    pedidos: est.pedidos||[], total, fechadoEm: Date.now(),
+  });
+
+  const config = DB.getConfig();
+  const cupom  = gerarCupomMesa(mesa, est);
+  imprimirCupom(cupom,'Caixa');
+
+  DB.setEstadoMesa(mesaAtiva,{status:'livre',pedidos:[],abertaEm:null});
+  toast(`Conta de ${mesa.nome} fechada! ${fmt(total)}`,'success');
+  marcarAtualizado();
+  fecharPanel();
+  renderMesas();
+}
+
+// ── Adicionar item ──
+function abrirAddItem(){
+  catAtiva='todos';
+  document.getElementById('addSearch').value='';
+  popularCatsAdd();
+  renderProdList();
+  document.getElementById('addModal').classList.add('open');
+}
+
+function fecharAddModal(){
+  document.getElementById('addModal').classList.remove('open');
+}
+
+function popularCatsAdd(){
+  const cats = ['todos',...DB.getCategorias()];
+  document.getElementById('addCats').innerHTML = cats.map(c=>
+    `<button class="cat-chip-g${c==='todos'?' active':''}" onclick="setCatAdd('${c.replace(/'/g,"\\'")}',this)">${c==='todos'?'✨ Todos':c}</button>`
+  ).join('');
+}
+
+function setCatAdd(cat,btn){
+  catAtiva=cat;
+  document.querySelectorAll('.cat-chip-g').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProdList();
+}
+
+const CAT_EMOJI={'Cervejas':'🍺','Petiscos':'🍗','Drinks':'🍹','Não Alcoólicos':'🥤','Sobremesas':'🍮','Lanches':'🍔','Pizzas':'🍕','Porções':'🍟'};
+
+function renderProdList(){
+  const busca = document.getElementById('addSearch').value.toLowerCase().trim();
+  const prods = DB.getCardapio().filter(p=>{
+    const mC = catAtiva==='todos'||p.categoria===catAtiva;
+    const mB = !busca||p.nome.toLowerCase().includes(busca)||(p.descricao||'').toLowerCase().includes(busca);
+    return mC&&mB&&p.estoque!==0;
+  });
+
+  const list = document.getElementById('prodList');
+  if(!prods.length){
+    list.innerHTML='<div style="text-align:center;padding:40px;color:#444;font-size:13px">Nenhum produto encontrado.</div>';
+    return;
+  }
+
+  list.innerHTML = prods.map(p=>{
+    const emoji = CAT_EMOJI[p.categoria]||'🍽️';
+    const imgHtml = p.imagem
+      ? `<img src="${p.imagem}" alt="${p.nome}" onerror="this.style.display='none'">`
+      : emoji;
+    return `
+    <div class="prod-row" onclick="selecionarProduto('${p.id}')">
+      <div class="prod-row-img">${imgHtml}</div>
+      <div class="prod-row-info">
+        <div class="prod-row-nome">${p.nome}</div>
+        <div class="prod-row-desc">${p.descricao||''}</div>
+      </div>
+      <div class="prod-row-preco">${fmt(p.preco)}</div>
+    </div>`;
+  }).join('');
+}
+
+function selecionarProduto(id){
+  const p = DB.getCardapio().find(x=>x.id===id);
+  if(!p) return;
+  confProduto = p;
+  confQtd     = 1;
+  document.getElementById('confNome').textContent  = p.nome;
+  document.getElementById('confPreco').textContent = fmt(p.preco);
+  document.getElementById('confQtd').textContent   = '1';
+  document.getElementById('confObs').value         = '';
+  fecharAddModal();
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function fecharConfirmModal(){
+  document.getElementById('confirmModal').classList.remove('open');
+  confProduto=null;
+}
+
+function mudaQtd(d){
+  const max = confProduto?.estoque??999;
+  confQtd = Math.min(max,Math.max(1,confQtd+d));
+  document.getElementById('confQtd').textContent=confQtd;
+}
+
+function confirmarAdd(){
+  if(!confProduto||!mesaAtiva) return;
+  const obs  = document.getElementById('confObs').value.trim();
+  const est  = DB.getEstadoMesa(mesaAtiva);
+  const peds = est.pedidos||[];
+
+  const existente = peds.find(p=>p.itemId===confProduto.id&&p.obs===obs);
+  if(existente){ existente.quantidade+=confQtd; }
+  else peds.push({
+    id: Date.now()+Math.random(),
+    itemId: confProduto.id,
+    nome: confProduto.nome,
+    preco: confProduto.preco,
+    quantidade: confQtd,
+    obs,
+    adicionadoEm: Date.now(),
+  });
+
+  const novoStatus = est.status==='livre'?'ocupada':est.status;
+  DB.setEstadoMesa(mesaAtiva,{...est,pedidos:peds,status:novoStatus});
+
+  // Impressão
+  const config = DB.getConfig();
+  if(config.autoImprimirSalao){
+    const mesa = DB.getMesas().find(m=>m.id===mesaAtiva);
+    const itensMov = [{itemId:confProduto.id,nome:confProduto.nome}];
+    imprimirInteligente(gerarCupomMesa(mesa,DB.getEstadoMesa(mesaAtiva)),itensMov);
+  }
+
+  // Deduzir estoque
+  const prod = DB.getTodosProdutos().find(p=>p.id===confProduto.id);
+  if(prod && prod.estoque>0){
+    DB.updateProduto(prod.id,{estoque:Math.max(0,(prod.estoque||0)-confQtd)});
+  }
+
+  toast(`${confQtd}× ${confProduto.nome} adicionado!`,'success');
+  marcarAtualizado();
+  fecharConfirmModal();
+  renderPanelBody();
+  renderMesas();
+}
+
+function sair(){
+  if(confirm('Sair do sistema?')) authLogout();
+}
+</script>
+</body>
+</html>

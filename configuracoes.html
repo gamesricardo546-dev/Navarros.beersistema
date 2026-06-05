@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NAVARROS.BEER - Configurações</title>
+<link rel="stylesheet" href="css/style.css">
+<script>!function(){var a=null;try{a=JSON.parse(localStorage.getItem('nb_auth'))}catch(e){}if(!a){location.replace('login.html');}else if(a.role==='garcom'){location.replace('garcom.html');}}();</script>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">🍺 <strong>NAVARROS.BEER</strong></div>
+  <div class="nav-links">
+    <a href="index.html">Painel de Mesas</a>
+    <a href="garcom.html">Atendimento</a>
+    <a href="pedidos.html">Pedidos</a>
+    <a href="configuracoes.html" class="active">Configurações</a>
+  </div>
+</nav>
+
+<main class="container">
+  <div class="page-header">
+    <h1>Configurações</h1>
+    <p>Configure impressoras, regras e preferências do sistema</p>
+  </div>
+
+  <div class="config-grid">
+    <!-- Impressoras -->
+    <div class="config-card">
+      <h3>🖨️ Impressoras</h3>
+      <div class="form-group">
+        <label>Impressora da Cozinha</label>
+        <input type="text" id="impressoraCozinha" placeholder="Ex: Cozinha-Thermal-Printer">
+        <small>Endereço de rede ou porta de conexão</small>
+      </div>
+      <div class="form-group">
+        <label>Impressora do Caixa</label>
+        <input type="text" id="impressoraCaixa" placeholder="Ex: Caixa-Thermal-Printer">
+        <small>Endereço de rede ou porta de conexão</small>
+      </div>
+      <div class="form-group checkbox-group">
+        <label><input type="checkbox" id="autoImprimirSalao"> Imprimir automaticamente pedidos do salão</label>
+        <small>Enviar para cozinha e caixa automaticamente ao confirmar</small>
+      </div>
+      <div class="form-group checkbox-group">
+        <label><input type="checkbox" id="autoImprimirEntrega"> Imprimir automaticamente retiradas/tele-entrega</label>
+        <small>Após aprovação do pedido, imprimir automaticamente</small>
+      </div>
+    </div>
+
+    <!-- Status de Mesa -->
+    <div class="config-card">
+      <h3>📊 Status de Mesa</h3>
+      <div class="form-group">
+        <label>Cor para Mesas Livres</label>
+        <div class="color-row">
+          <input type="color" id="corLivre" value="#22c55e" oninput="atualizarCorPreview('corLivre','previewLivre')">
+          <input type="text" id="previewLivre" value="#22c55e" maxlength="7" oninput="syncColorInput('previewLivre','corLivre')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Cor para Mesas Ocupadas</label>
+        <div class="color-row">
+          <input type="color" id="corOcupada" value="#ef4444" oninput="atualizarCorPreview('corOcupada','previewOcupada')">
+          <input type="text" id="previewOcupada" value="#ef4444" maxlength="7" oninput="syncColorInput('previewOcupada','corOcupada')">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Cor para Mesas Aguardando</label>
+        <div class="color-row">
+          <input type="color" id="corAguardando" value="#f59e0b" oninput="atualizarCorPreview('corAguardando','previewAguardando')">
+          <input type="text" id="previewAguardando" value="#f59e0b" maxlength="7" oninput="syncColorInput('previewAguardando','corAguardando')">
+        </div>
+      </div>
+    </div>
+
+    <!-- Áreas/Salões -->
+    <div class="config-card">
+      <h3>👥 Áreas/Salões</h3>
+      <div id="saloesList"></div>
+      <button class="btn btn-outline" onclick="adicionarSalao()">+ Adicionar Salão</button>
+    </div>
+
+    <!-- WhatsApp -->
+    <div class="config-card">
+      <h3>📱 WhatsApp para Pedidos</h3>
+      <div class="form-group">
+        <label>Número do WhatsApp</label>
+        <input type="tel" id="whatsappNumero" placeholder="Ex: 5511999999999"
+               oninput="formatarWhatsapp(this)"
+               style="font-size:16px;letter-spacing:0.5px">
+        <small>Número com código do país + DDD + número (somente dígitos). Ex: <strong>5511999999999</strong></small>
+      </div>
+      <div id="whatsappPreview" style="display:none;margin-top:10px;padding:10px 14px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;font-size:13px;color:#374151">
+        📱 Link gerado: <a id="whatsappLink" href="#" target="_blank" style="color:#15803d;font-weight:600;word-break:break-all"></a>
+      </div>
+    </div>
+
+    <!-- Sistema -->
+    <div class="config-card">
+      <h3>ℹ️ Sistema</h3>
+      <div class="sistema-info">
+        <div><small>Versão do Sistema</small><strong>1.0.0</strong></div>
+        <div><small>Última Atualização</small><strong id="dataAtual"></strong></div>
+        <div><small>Status</small><strong><span class="dot livre" style="display:inline-block;margin-right:4px"></span>Online</strong></div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:16px;width:100%" onclick="sincronizarDados()">Sincronizar Dados</button>
+    </div>
+
+    <!-- Cardápio -->
+    <div class="config-card config-card-full">
+      <h3>🍽️ Cardápio</h3>
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <select id="novaCategoria" style="flex:1;min-width:150px">
+          <option value="">Selecione categoria...</option>
+        </select>
+        <input type="text" id="nomeItem" placeholder="Nome do item" style="flex:2;min-width:150px">
+        <input type="number" id="precoItem" placeholder="Preço (R$)" style="flex:1;min-width:100px" step="0.01">
+        <input type="text" id="descItem" placeholder="Descrição (opcional)" style="flex:2;min-width:150px">
+        <button class="btn btn-primary" onclick="adicionarItemCardapio()">Adicionar</button>
+      </div>
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+        <input type="text" id="novaCategoriaNome" placeholder="Nome da nova categoria">
+        <button class="btn btn-outline" onclick="adicionarCategoria()">+ Nova Categoria</button>
+      </div>
+      <table class="tabela-cardapio" id="tabelaCardapio">
+        <thead>
+          <tr><th>Categoria</th><th>Nome</th><th>Preço</th><th>Descrição</th><th>Ação</th></tr>
+        </thead>
+        <tbody id="cardapioBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Mesas -->
+    <div class="config-card config-card-full">
+      <h3>🪑 Mesas</h3>
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <input type="text" id="nomeMesa" placeholder="Nome da mesa (ex: Mesa 09)" style="flex:1">
+        <select id="salaoMesa" style="flex:1"></select>
+        <button class="btn btn-primary" onclick="adicionarMesa()">Adicionar Mesa</button>
+      </div>
+      <table class="tabela-cardapio" id="tabelaMesas">
+        <thead><tr><th>Mesa</th><th>Salão</th><th>Ação</th></tr></thead>
+        <tbody id="mesasBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="text-align:right;margin-top:24px">
+    <button class="btn btn-primary" onclick="salvarConfiguracoes()">💾 Salvar Configurações</button>
+  </div>
+</main>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/configuracoes.js"></script>
+<script>authRenderNav();</script>
+</body>
+</html>

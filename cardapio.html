@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>NAVARROS.BEER – Cardápio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/cardapio.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <span class="topbar-info"><i class="fas fa-map-marker-alt"></i> Rua das Cervejas, 42 – Centro</span>
+  <span class="store-status" id="storeStatus">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Verificando…</span>
+  </span>
+  <span class="topbar-info"><i class="fas fa-clock"></i> Seg–Dom: 11h às 23h</span>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-logo"><span>NAVARROS</span>.BEER</a>
+  <div class="search-bar">
+    <input type="search" id="searchInput" placeholder="Buscar no cardápio…" oninput="handleSearch(this.value)">
+    <i class="fas fa-search search-icon"></i>
+  </div>
+  <button class="cart-btn" id="cartBtn" onclick="toggleCart()">
+    <i class="fas fa-shopping-bag"></i>
+    <span id="cartBtnTotal">R$ 0,00</span>
+    <span class="cart-count" id="cartCount"></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-tag"><i class="fas fa-fire"></i> Pedido em tempo real</div>
+    <h1 class="hero-title">NAVARROS<em>BEER</em></h1>
+    <p class="hero-desc">Cervejas geladas, petiscos irresistíveis e os melhores drinks da cidade. Peça agora!</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="scrollToMenu()"><i class="fas fa-utensils"></i> Ver Cardápio</button>
+      <button class="btn-secondary" onclick="openCheckout()"><i class="fas fa-motorcycle"></i> Pedir Delivery</button>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">3K+</div><div class="lbl">Pedidos</div></div>
+    <div class="hero-stat"><div class="num">4.9★</div><div class="lbl">Avaliação</div></div>
+    <div class="hero-stat"><div class="num">40min</div><div class="lbl">Delivery</div></div>
+  </div>
+</section>
+
+<!-- PROMO BANNER -->
+<div class="promo-banner">
+  <div class="promo-text">
+    <i class="fas fa-bolt promo-icon"></i>
+    <div>
+      <h3>HAPPY HOUR – Hoje das 18h às 21h</h3>
+      <p>Cervejas artesanais com 30% off. Use o cupom abaixo!</p>
+    </div>
+  </div>
+  <div class="promo-code" onclick="copyCode('BEER30')" title="Clique para copiar">
+    <div><small>Use o cupom</small><span>BEER30</span></div>
+    <i class="fas fa-copy"></i>
+  </div>
+</div>
+
+<!-- CATEGORIES STRIP -->
+<div class="categories-strip" id="categoriesStrip">
+  <div class="categories-scroll" id="categoriesScroll">
+    <button class="cat-chip active" data-cat="" onclick="filterCategory(this,'')">
+      <i class="fas fa-th-large"></i> Todos
+    </button>
+  </div>
+</div>
+
+<!-- MENU SECTION -->
+<section class="menu-section" id="menuSection">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Cardápio</div>
+      <h2 class="section-title">O MELHOR PARA VOCÊ</h2>
+    </div>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<!-- FEATURED SECTION -->
+<section class="menu-section" id="featuredSection" style="padding-top:0">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Destaques</div>
+      <h2 class="section-title">MAIS PEDIDOS</h2>
+    </div>
+  </div>
+  <div class="featured-grid" id="featuredGrid"></div>
+</section>
+
+<!-- BOTTOM SPACER -->
+<!-- RODAPÉ DISCRETO -->
+<footer style="text-align:center;padding:48px 16px 32px;border-top:1px solid #1a1a1a">
+  <p style="font-size:11px;color:#333;letter-spacing:0.5px;margin-bottom:16px">© 2025 Navarros Beer</p>
+  <a href="login.html"
+     onclick="localStorage.removeItem('nb_auth')"
+     style="display:inline-block;font-size:12px;color:#555;text-decoration:none;
+            letter-spacing:0.8px;border:1px solid #333;padding:8px 20px;
+            border-radius:20px;-webkit-tap-highlight-color:transparent">
+    🔒 Acesso Restrito
+  </a>
+</footer>
+
+<div id="bottomSpacer" style="height:80px;display:none"></div>
+
+<!-- BOTTOM CART BAR (mobile) -->
+<div class="bottom-cart-bar" id="bottomBar" onclick="toggleCart()">
+  <div class="bottom-bar-left">
+    <span class="bottom-bar-count" id="bottomBarCount">0 itens</span>
+    <span class="bottom-bar-total" id="bottomBarTotal">R$ 0,00</span>
+  </div>
+  <span class="bottom-bar-btn">Ver Carrinho <i class="fas fa-shopping-bag"></i></span>
+</div>
+
+<!-- CART OVERLAY + SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<aside class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2><i class="fas fa-shopping-bag" style="color:var(--accent);margin-right:10px"></i>Seu Pedido</h2>
+    <button class="close-btn" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="coupon-row">
+      <input type="text" class="coupon-input" id="couponInput" placeholder="Código do cupom">
+      <button class="coupon-btn" onclick="applyCoupon()">Aplicar</button>
+    </div>
+    <div class="totals">
+      <div class="total-row"><span>Subtotal</span><span class="tv" id="cartSubtotal">R$ 0,00</span></div>
+      <div class="total-row" id="discountRow" style="display:none"><span>Desconto</span><span class="tv discount" id="cartDiscount">- R$ 0,00</span></div>
+      <div class="total-row"><span>Taxa de entrega</span><span class="tv">Grátis</span></div>
+      <div class="total-row grand"><span>Total</span><span class="tv" id="cartGrand">R$ 0,00</span></div>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()"><i class="fas fa-lock"></i> FINALIZAR PEDIDO</button>
+  </div>
+</aside>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="productModal" onclick="handleModalOverlayClick(event,'productModal')">
+  <div class="modal-box" id="productModalBox">
+    <div class="modal-img" id="modalImg">
+      <button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-category" id="modalCategory"></div>
+      <h2 class="modal-name" id="modalName"></h2>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-price-row" style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <div class="modal-price-old" id="modalPriceOld" style="display:none"></div>
+          <div class="modal-price" id="modalPrice"></div>
+        </div>
+        <div id="modalStockInfo" style="margin-bottom:4px"></div>
+      </div>
+      <!-- ADICIONAIS -->
+      <div id="modalAdicionais"></div>
+      <!-- OBSERVAÇÃO -->
+      <div class="modal-obs">
+        <label><i class="fas fa-comment-alt"></i> Observação</label>
+        <textarea id="modalObs" placeholder="Ex: sem gelo, ponto da carne, sem cebola…"></textarea>
+      </div>
+      <!-- QTD + ADICIONAR -->
+      <div class="modal-footer-row">
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeModalQty(-1)"><i class="fas fa-minus"></i></button>
+          <span class="qty-num" id="modalQty">1</span>
+          <button class="qty-btn" onclick="changeModalQty(1)"><i class="fas fa-plus"></i></button>
+        </div>
+        <button class="modal-add-btn" onclick="addToCartFromModal()">
+          <i class="fas fa-plus"></i> ADICIONAR &bull; <span id="modalTotalPrice">R$ 0,00</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal" onclick="handleModalOverlayClick(event,'checkoutModal')">
+  <div class="modal-box checkout-box">
+    <div class="modal-body" style="padding-top:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <h3 class="checkout-title"><i class="fas fa-receipt" style="margin-right:8px"></i>FINALIZAR PEDIDO</h3>
+        <button class="close-btn" onclick="closeModal('checkoutModal')"><i class="fas fa-times"></i></button>
+      </div>
+
+      <!-- TIPO DE ENTREGA -->
+      <div class="form-group">
+        <label>Como quer receber?</label>
+        <div class="entrega-btns">
+          <button class="entrega-btn active" id="btnEntregaDelivery" onclick="setEntregaTipo('tele-entrega',this)">
+            <i class="fas fa-motorcycle"></i>
+            <div><strong>Delivery</strong><small>+ R$ 7,00</small></div>
+          </button>
+          <button class="entrega-btn" id="btnEntregaRetirada" onclick="setEntregaTipo('retirada',this)">
+            <i class="fas fa-store"></i>
+            <div><strong>Retirada</strong><small>Grátis</small></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- DADOS PESSOAIS -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Seu nome *</label>
+          <input type="text" id="ckNome" class="form-input" placeholder="Nome completo" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp *</label>
+          <input type="tel" id="ckTel" class="form-input" placeholder="(00) 00000-0000" oninput="mascaraTel(this)" autocomplete="tel">
+        </div>
+      </div>
+
+      <!-- ENDEREÇO (só delivery) -->
+      <div id="enderecoFields">
+        <div class="form-group">
+          <label>Endereço *</label>
+          <input type="text" id="ckRua" class="form-input" placeholder="Rua, Avenida, Travessa…">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Número *</label>
+            <input type="text" id="ckNum" class="form-input" placeholder="Nº">
+          </div>
+          <div class="form-group">
+            <label>Bairro *</label>
+            <input type="text" id="ckBairro" class="form-input" placeholder="Seu bairro">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Complemento</label>
+          <input type="text" id="ckComp" class="form-input" placeholder="Apto, bloco, referência…">
+        </div>
+      </div>
+
+      <!-- PAGAMENTO -->
+      <div class="form-group">
+        <label>Forma de Pagamento</label>
+        <div class="payment-grid">
+          <div class="pay-option active" onclick="selectPayment(this,'pix')"><i class="fas fa-qrcode"></i> PIX</div>
+          <div class="pay-option" onclick="selectPayment(this,'credito')"><i class="fas fa-credit-card"></i> Crédito</div>
+          <div class="pay-option" onclick="selectPayment(this,'debito')"><i class="fas fa-credit-card"></i> Débito</div>
+          <div class="pay-option" onclick="selectPayment(this,'dinheiro')"><i class="fas fa-money-bill"></i> Dinheiro</div>
+        </div>
+      </div>
+
+      <!-- RESUMO -->
+      <div class="checkout-summary" id="checkoutSummary"></div>
+
+      <!-- WHATSAPP -->
+      <button class="btn-whatsapp" style="font-size:1.05rem;padding:16px;margin-top:4px" onclick="enviarViaWhatsApp()">
+        <i class="fab fa-whatsapp"></i> ENVIAR PEDIDO VIA WHATSAPP
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/cardapio-cliente.js"></script>
+</body>
+</html>

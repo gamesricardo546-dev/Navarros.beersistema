@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: navarros_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: navarros
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-troqueesta_senha_segura}
+      POSTGRES_DB: navarros_beer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data      # dados persistidos
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql  # executa na criação
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U navarros -d navarros_beer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - navarros_net
+
+  # ── API Node.js ─────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: navarros_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://navarros:${DB_PASSWORD:-troqueesta_senha_segura}@postgres:5432/navarros_beer
+      JWT_SECRET: ${JWT_SECRET:-TROQUE_ISTO_por_uma_string_aleatoria_de_64_chars_minimo}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000}
+    ports:
+      - "3000:3000"
+    networks:
+      - navarros_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pg_data:
+    name: navarros_pgdata
+
+networks:
+  navarros_net:
+    name: navarros_network
