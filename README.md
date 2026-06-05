@@ -4,7 +4,7 @@ Sistema completo de gerenciamento de mesas, pedidos e cardápio para bares e res
 
 ## 📁 Estrutura de Arquivos
 
-```
+
 navarros-beer/
 ├── index.html          → Painel de Mesas (admin)
 ├── pedidos.html        → Gerenciar Pedidos externos (admin)
@@ -14,32 +14,12 @@ navarros-beer/
 │   ├── style.css       → Estilos do painel admin
 │   └── cardapio.css    → Estilos do cardápio cliente
 └── js/
-    ├── data.js         → Banco de dados local (localStorage)
+    ├── data.js         → Banco de dados 
     ├── app.js          → Utilitários compartilhados + impressão
     ├── mesas.js        → Lógica do painel de mesas
     ├── pedidos.js      → Lógica dos pedidos externos
     ├── configuracoes.js → Lógica das configurações
     └── cardapio-cliente.js → Lógica do cardápio do cliente
-```
-
-## 🚀 Como Usar
-
-### Opção 1 — Abrir direto no navegador
-Abra o arquivo `index.html` no navegador (Chrome recomendado).
-> **Atenção:** Para impressão automática em impressoras de rede, use um servidor local (opção 2).
-
-### Opção 2 — Servidor local (recomendado)
-```bash
-# Com Python (já instalado na maioria dos sistemas):
-cd navarros-beer
-python3 -m http.server 8080
-
-# Depois acesse:
-# http://localhost:8080          → Painel Admin
-# http://localhost:8080/cardapio.html → Cardápio do cliente
-```
-
----
 
 ## 📱 Páginas do Sistema
 
